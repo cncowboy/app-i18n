@@ -1,6 +1,8 @@
 # coding=UTF-8
 
 import os
+import re
+import hashlib
 import codecs
 import shutil
 import tkMessageBox
@@ -15,12 +17,14 @@ FILE_CODING = "utf-8"  # 翻译文本编码格式(默认UTF-8)
 ITEM_SEPARATOR = "\t"  # 列表间的分隔符
 OUTPUT_FORMAT_IOS = "iOS"
 OUTPUT_FORMAT_ANDROID = "Android"
+PLACE_HOLDER_RE = re.compile(r'\{\{(.*?)\}\}')
 
 
 class I18NTranslator:
     # 初始化
     def __init__(self):
         self.langls = []  # 语言的list
+        self.langlNames = {}  # 语言显示名称的list
         self.infols = []  # 信息的list
         self.cur_dir = os.path.split(os.path.realpath(__file__))[0]  # 脚本当前的路径       
 
@@ -34,7 +38,7 @@ class I18NTranslator:
         txt_fd.close()
 
         # 对第一行的数据进行划分,获取语言列表
-        self.langls = ls[0].split(ITEM_SEPARATOR)[1:]
+        self.langls = ls[0].split(ITEM_SEPARATOR)[2:]
         # 修改语言描述
         self.edit_language_desc()
 
@@ -58,12 +62,16 @@ class I18NTranslator:
 
         # 获取语言列表
         lang_col = []
-        for l in sheet["1"][1:]:  # 第1行
+        for l in sheet["1"][2:]:  # 第1行
             if l.value is not None:
                 lang_col.append(l.column)  # 语言列的索引
-                self.langls.append(l.value.encode("utf-8"))
+                names = l.value.split('/')
+                if len(names) != 2:
+                    continue
+                self.langls.append(names[1].encode(FILE_CODING))
+                self.langlNames[names[1]] = names[0].encode(FILE_CODING)
         # 修改语言描述
-        self.edit_language_desc()
+        # self.edit_language_desc()
 
         # 逐行读取数据（从第二行到最后一列）
         for i in range(2, sheet.max_row):
@@ -77,7 +85,7 @@ class I18NTranslator:
                         if r.value is None:
                             info = ""
                         else:
-                            info = r.value
+                            info = PLACE_HOLDER_RE.sub(r'%s', r.value)
                         subls.append(info.encode("utf-8"))
                 self.infols.append({"key": row_str[0].value, "value": subls})
 
@@ -120,6 +128,8 @@ class I18NTranslator:
                 self.langls[i] = "zh"
             elif self.langls[i] == "英文":
                 self.langls[i] = "en"
+            elif self.langls[i] == "印尼语":
+                self.langls[i] = "id"
             elif self.langls[i] == "韩文":
                 self.langls[i] = "ko"
             elif self.langls[i] == "日文":
@@ -147,7 +157,7 @@ class I18NTranslator:
                 value = ""
 
             # 拼接每一行的文本
-            str = "<string name=\"{k}\">{v}</string>\n".format(k=key, v=value)
+            str = "<string name=\"string_{k}\">{v}</string>\n".format(k=key, v=value)
             stringls.append(str)
 
         # 拼接字符串
@@ -204,21 +214,35 @@ class I18NTranslator:
             # # 生成根据后缀名生成相应格式的文本
             if form == OUTPUT_FORMAT_ANDROID:
                 text = self.generate_xml(lang)
-                dir_name = "values-" + lang
-                file = "strings.xml"
+                file = lang + ".xml"
             else:
                 text = self.generate_txt(lang)
-                dir_name = lang + ".lproj"
-                file = "Localizable.strings"
+                file = lang + ".strings"
 
             # 根据语言,建立相应的文件夹目录
-            if not os.path.exists(dir_name):
-                os.mkdir(dir_name)
+            # if not os.path.exists(dir_name):
+            #     os.mkdir(dir_name)
 
             # 新建文本,并将数据写入
-            txtfd = open(os.path.join(dir_name, file), 'w')
+            txtfd = open(file, 'w')
             txtfd.write(text)
             txtfd.close()
+            md5 = self.GetFileMd5(file)
+            print "id:{}, name:{}, file:{}, md5:{}".format(lang, self.langlNames[lang], file , md5)
+            #print("id:", lang, "name:", self.langlNames[lang], "file:", file , "md5:", md5)
+
+    def GetFileMd5(self, filename):
+       if not os.path.isfile(filename):
+           return
+       myhash = hashlib.md5()
+       f = open(filename,'rb')
+       while True:
+           b = f.read(8096)
+           if not b :
+               break
+           myhash.update(b)
+       f.close()
+       return myhash.hexdigest()
 
 # 选择文件的图形界面
 class SelectFileDialog(Tkinter.Frame):
