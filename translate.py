@@ -62,12 +62,13 @@ class I18NTranslator:
 
         # 获取语言列表
         lang_col = []
-        for l in sheet["1"][2:]:  # 第1行
+        for l in sheet["1"][3:]:  # 第1行
             if l.value is not None:
-                lang_col.append(l.column)  # 语言列的索引
                 names = l.value.split('/')
                 if len(names) != 2:
+                    print('not equal 2')
                     continue
+                lang_col.append(l.column)  # 语言列的索引
                 self.langls.append(names[1].encode(FILE_CODING))
                 self.langlNames[names[1]] = names[0].encode(FILE_CODING)
         # 修改语言描述
@@ -98,12 +99,20 @@ class I18NTranslator:
         # 获取语言列表
         lang_col = []
         first_row = sheet.row(0)
+
         for i in range(len(first_row)):  # 第1行
             if i > 0 and first_row[i].value is not None:
+                names = first_row[i].value.split('/')
+                if len(names) != 2:
+                    print('not equal 2')
+                    continue
                 lang_col.append(i)  # 语言列的索引
-                self.langls.append(first_row[i].value.encode("utf-8"))
+                self.langls.append(names[1].encode(FILE_CODING))
+                self.langlNames[names[1]] = names[0].encode(FILE_CODING)
+ 
+
         # 修改语言描述
-        self.edit_language_desc()
+        # self.edit_language_desc()
 
         # 逐行读取数据（从第二行到最后一行）
         max_row = sheet.nrows
@@ -157,7 +166,7 @@ class I18NTranslator:
                 value = ""
 
             # 拼接每一行的文本
-            str = "<string name=\"string_{k}\">{v}</string>\n".format(k=key, v=value)
+            str = "<string name=\"string_{k}\">{v}</string>\n".format(k=int(key), v=value)
             stringls.append(str)
 
         # 拼接字符串
@@ -180,7 +189,7 @@ class I18NTranslator:
                 value = ""
 
             # 拼接每一行的文本
-            str = "\"{k}\" = \"{v}\";\n".format(k=key, v=value)
+            str = "\"{k}\" = \"{v}\";\n".format(k=int(key), v=value)
             stringls.append(str)
 
         # 拼接字符串
