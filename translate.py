@@ -126,7 +126,7 @@ class I18NTranslator:
                         if row_str[r].value is None:
                             info = ""
                         else:
-                            info = row_str[r].value
+                            info = PLACE_HOLDER_RE.sub(r'%s', row_str[r].value)
                         subls.append(info.encode("utf-8"))
                 self.infols.append({"key": row_str[0].value, "value": subls})
 
