@@ -158,7 +158,7 @@ class I18NTranslator:
         for info in self.infols:
             key = info["key"]
             try:
-                value = info["value"][langls_index]
+                value = info["value"][langls_index].strip()
                 # Android的单引号需要转义处理
                 if "\'" in value:
                     value = value.replace("\'", "\\\'")
@@ -181,7 +181,7 @@ class I18NTranslator:
         for info in self.infols:
             key = info["key"]
             try:
-                value = info["value"][langls_index]
+                value = info["value"][langls_index].strip()
                 # iOS的双引号需要转义处理
                 if "\"" in value:
                     value = value.replace("\"", "\\\"")
@@ -237,6 +237,7 @@ class I18NTranslator:
             txtfd.write(text)
             txtfd.close()
             md5 = self.GetFileMd5(file)
+            os.rename(file, file.replace(lang, lang + "." + md5))
             print "id:{}, name:{}, file:{}, md5:{}".format(lang, self.langlNames[lang], file , md5)
             #print("id:", lang, "name:", self.langlNames[lang], "file:", file , "md5:", md5)
 
