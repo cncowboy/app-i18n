@@ -11,6 +11,7 @@ import tkFileDialog
 from Tkinter import *
 import xlrd
 from openpyxl import load_workbook
+from xml.sax.saxutils import escape
 
 
 FILE_CODING = "utf-8"  # 翻译文本编码格式(默认UTF-8)
@@ -162,6 +163,8 @@ class I18NTranslator:
                 # Android的单引号需要转义处理
                 if "\'" in value:
                     value = value.replace("\'", "\\\'")
+                value = escape(value)
+
             except IndexError:  # 防止空列越界
                 value = ""
 
