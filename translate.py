@@ -154,6 +154,7 @@ class I18NTranslator:
     # 拼接字符生成xml文本(Android)
     def generate_xml(self, lang):
         stringls = []
+        stringls.append('<?xml version="1.0" encoding="utf-8"?>\n')
         # 对应的语言索引位置
         langls_index = self.langls.index(lang)
         for info in self.infols:
@@ -208,8 +209,10 @@ class I18NTranslator:
             dir_path = os.path.join(self.cur_dir, OUTPUT_FORMAT_ANDROID)
         else:
             dir_path = os.path.join(self.cur_dir, OUTPUT_FORMAT_IOS)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+        dir_path_md5 = os.path.join(dir_path, "md5")
+        if not os.path.exists(dir_path_md5):
+            os.makedirs(dir_path_md5)
+ 
         os.chdir(dir_path)
 
         # 移除子目录下所有的文件, 防止写入时发生冲突
@@ -217,7 +220,8 @@ class I18NTranslator:
         for i in lsdir:
             try:
                 # 删除时进行异常处理，防止崩溃（Mac下会自动生成.DS_Store文件）
-                shutil.rmtree(i)
+                if i != "md5":
+                    shutil.rmtree(i)
             except Exception as e:
                 print(e)
 
@@ -240,7 +244,17 @@ class I18NTranslator:
             txtfd.write(text)
             txtfd.close()
             md5 = self.GetFileMd5(file)
-            os.rename(file, file.replace(lang, lang + "." + md5))
+            md5File = file.replace(lang, lang + "." + md5)
+            #os.rename(file, file.replace(lang, lang + "." + md5))
+
+            if os.path.exists(md5File):
+                os.remove(md5File)
+            if os.path.exists("md5/" + md5File):
+                os.remove("md5/" + md5File)
+            shutil.copy(file, md5File)
+            shutil.copy2(md5File, "md5/" + md5File)
+            os.remove(md5File)
+
             print "id:{}, name:{}, file:{}, md5:{}".format(lang, self.langlNames[lang], file , md5)
             #print("id:", lang, "name:", self.langlNames[lang], "file:", file , "md5:", md5)
 
