@@ -154,7 +154,6 @@ class I18NTranslator:
     # 拼接字符生成xml文本(Android)
     def generate_xml(self, lang):
         stringls = []
-        stringls.append('<?xml version="1.0" encoding="utf-8"?>\n')
         # 对应的语言索引位置
         langls_index = self.langls.index(lang)
         for info in self.infols:
@@ -174,7 +173,7 @@ class I18NTranslator:
             stringls.append(str)
 
         # 拼接字符串
-        text = "<resources>\n\t" + "\t".join(stringls) + "</resources>\n"
+        text = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n\t" + "\t".join(stringls) + "</resources>\n"
         return text
 
     # 生成键值对的txt文本(iOS)
