@@ -124,6 +124,9 @@ class I18NTranslator:
         for i in range(1, max_row):
             subls = []
             row_str = sheet.row(i)
+            if not (row_str[1].value or row_str[1].value == ""):
+                continue
+            print(row_str[1].value)
             if row_str[0].value:  # key不为空才进行处理
                 for r in range(len(row_str)):
                     if r in lang_col:
