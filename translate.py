@@ -18,6 +18,7 @@ FILE_CODING = "utf-8"  # 翻译文本编码格式(默认UTF-8)
 ITEM_SEPARATOR = "\t"  # 列表间的分隔符
 OUTPUT_FORMAT_IOS = "iOS"
 OUTPUT_FORMAT_ANDROID = "Android"
+OUTPUT_FORMAT_WEB = "web"
 PLACE_HOLDER_RE = re.compile(r'\{\{(.*?)\}\}')
 
 
@@ -185,6 +186,31 @@ class I18NTranslator:
         text = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n\t" + "\t".join(stringls) + "</resources>\n"
         return text
 
+    def generate_json(self, lang):
+        stringls = []
+        # 对应的语言索引位置
+        langls_index = self.langls.index(lang)
+        for info in self.infols:
+            key = info["key"]
+            try:
+                value = info["value"][langls_index].strip()
+                # Android的单引号需要转义处理
+                if "\'" in value:
+                    value = value.replace("\'", "\\\'")
+                value = escape(value)
+
+            except IndexError:  # 防止空列越界
+                value = ""
+
+            # 拼接每一行的文本
+            str = "t_{k}: {v}\n".format(k=int(key), v=value)
+            stringls.append(str)
+
+        # 拼接字符串
+        text = "{\n" + "".join(stringls) + "}\n"
+        return text
+
+
     # 生成键值对的txt文本(iOS)
     def generate_txt(self, lang):
         stringls = []
@@ -312,15 +338,19 @@ class SelectFileDialog(Tkinter.Frame):
         formatFrame.pack()
         self.value_ios = IntVar()
         self.value_android = IntVar()
+        self.value_web = IntVar()
         self.value_ios.set(1)
         self.value_android.set(1)
+        self.value_web.set(1)
         tvOutput = Label(formatFrame, text="Output Format：")
         cbIOS = Checkbutton(formatFrame, text=OUTPUT_FORMAT_IOS, variable=self.value_ios)
         cbAndroid = Checkbutton(formatFrame, text=OUTPUT_FORMAT_ANDROID, variable=self.value_android)
+        cbWeb = Checkbutton(formatFrame, text=OUTPUT_FORMAT_WEB, variable=self.value_web)
         # 使用网格管理器排列按钮
         tvOutput.grid(row=1, column=1)
         cbIOS.grid(row=1, column=2)
         cbAndroid.grid(row=1, column=3)
+        cbWeb.grid(row=1, column=3)
 
         # 创建Start按钮
         Tkinter.Button(self, text='Start', command=self.begin_transform).pack()
@@ -335,7 +365,8 @@ class SelectFileDialog(Tkinter.Frame):
         if self.file_path:
             opt_ios = self.value_ios.get() == 1
             opt_android = self.value_android.get() == 1
-            if opt_ios or opt_android:
+            opt_web = self.value_web.get() == 1
+            if opt_ios or opt_android or opt_web:
                 translator = I18NTranslator()
                 if self.file_path.endswith(".txt"):  # txt文本
                     translator.parse_txt_file(self.file_path)
@@ -350,6 +381,10 @@ class SelectFileDialog(Tkinter.Frame):
                 if opt_android:
                     translator.build_translated_file(OUTPUT_FORMAT_ANDROID)
                     print("Android Finish")
+                if opt_web:
+                    translator.build_translated_file(OUTPUT_FORMAT_WEB)
+                    print("Web Finish")
+ 
                 # 完成提示
                 title = "Message"
                 tips_string = "Translation Done"
