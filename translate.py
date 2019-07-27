@@ -241,7 +241,7 @@ class I18NTranslator:
         # 建立父文件夹,并切换到该目录下
         if form == OUTPUT_FORMAT_ANDROID:
             dir_path = os.path.join(self.cur_dir, OUTPUT_FORMAT_ANDROID)
-        else if form == OUTPUT_FORMAT_WEB:
+        elif form == OUTPUT_FORMAT_WEB:
             dir_path = os.path.join(self.cur_dir, OUTPUT_FORMAT_WEB)
         else:
             dir_path = os.path.join(self.cur_dir, OUTPUT_FORMAT_IOS)
@@ -267,7 +267,7 @@ class I18NTranslator:
             if form == OUTPUT_FORMAT_ANDROID:
                 text = self.generate_xml(lang)
                 file = lang + ".xml"
-            else if form == OUTPUT_FORMAT_ANDROID:
+            elif form == OUTPUT_FORMAT_WEB:
                 text = self.generate_xml(lang)
                 file = lang + ".js"
             else:
