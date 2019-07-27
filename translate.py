@@ -203,11 +203,11 @@ class I18NTranslator:
                 value = ""
 
             # 拼接每一行的文本
-            str = "t_{k}: {v}\n".format(k=int(key), v=value)
+            str = "t{k}: '{v}'\n".format(k=int(key), v=value)
             stringls.append(str)
 
         # 拼接字符串
-        text = "{\n" + "".join(stringls) + "}\n"
+        text = "{\n" + ",".join(stringls) + "}\n"
         return text
 
 
@@ -268,7 +268,7 @@ class I18NTranslator:
                 text = self.generate_xml(lang)
                 file = lang + ".xml"
             elif form == OUTPUT_FORMAT_WEB:
-                text = self.generate_xml(lang)
+                text = self.generate_json(lang)
                 file = lang + ".js"
             else:
                 text = self.generate_txt(lang)
