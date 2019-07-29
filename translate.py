@@ -203,11 +203,11 @@ class I18NTranslator:
                 value = ""
 
             # 拼接每一行的文本
-            str = "t{k}: '{v}'".format(k=int(key), v=value)
+            str = "  t{k}: '{v}'".format(k=int(key), v=value)
             stringls.append(str)
 
         # 拼接字符串
-        text = "{\n" + ",\n".join(stringls) + "\n}\n"
+        text = "export default {\n" + ",\n".join(stringls) + "\n}\n"
         return text
 
 
